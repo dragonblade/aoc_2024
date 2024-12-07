@@ -6,7 +6,7 @@ build-depends:
     universe-base,
 -}
 
-import Data.List (transpose)
+import Data.List (sort, transpose)
 import Data.Universe.Helpers (diagonals)
 import System.IO (isEOF)
 import Text.Regex.PCRE ((=~))
@@ -31,14 +31,17 @@ solveA l = sum (map matchXmas l) + sum (map matchXmas $ transpose l) + sum (map 
 matchXmas :: String -> Int
 matchXmas s = length (s =~ "XMAS" :: [[String]]) + length (s =~ "SAMX" :: [[String]])
 
-solveB [] = 0
-solveB [_] = 0
-solveB [_, _] = 0
-solveB (a : b : c : xs) = matchXMas (concat [a, b, c]) (length a) + solveB (b : c : xs)
+solveB = solveBh 1 1
 
-matchXMas :: String -> Int -> Int
-matchXMas s l =
-  length (s =~ ("M.S.{" ++ show (l - 2) ++ "}A.{" ++ show (l - 2) ++ "}M.S") :: [[String]])
-    + length (s =~ ("M.S.{" ++ show (l - 2) ++ "}A.{" ++ show (l - 2) ++ "}S.M") :: [[String]])
-    + length (s =~ ("S.M.{" ++ show (l - 2) ++ "}A.{" ++ show (l - 2) ++ "}M.S") :: [[String]])
-    + length (s =~ ("S.M.{" ++ show (l - 2) ++ "}A.{" ++ show (l - 2) ++ "}S.M") :: [[String]])
+solveBh y x g
+  | x == length (head g) - 1 = solveBh (y + 1) 1 g
+  | y == length g - 1 = 0
+  | otherwise = fromEnum (checkXmas g y x) + solveBh y (x + 1) g
+
+checkXmas :: [String] -> Int -> Int -> Bool
+checkXmas g y x =
+  y < length g - 1
+    && x < length (head g) - 1
+    && g !! y !! x == 'A'
+    && sort [g !! (y - 1) !! (x - 1), g !! (y + 1) !! (x + 1)] == ['M', 'S']
+    && sort [g !! (y - 1) !! (x + 1), g !! (y + 1) !! (x - 1)] == ['M', 'S']

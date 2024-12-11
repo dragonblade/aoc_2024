@@ -3,33 +3,40 @@
 import math
 
 
+HIST = {}
+
+
 def read():
     return list(map(int, input().strip().split()))
 
 
 def a(stones: list[int]):
-    for _ in range(25):
-        stones = blink(stones)
-    print(len(stones))
+    print(sum(blink(25, s) for s in stones))
 
 
 def b(stones: list[int]):
-    for _ in range(75):
-        stones = blink(stones)
-    print(len(stones))
+    print(sum(blink(75, s) for s in stones))
 
 
-def blink(stones: list[int]) -> list[int]:
-    new = []
-    for stone in stones:
-        if stone == 0:
-            new.append(1)
-        elif math.floor(math.log10(stone) + 1) % 2 == 0:
-            c = math.floor(math.log10(stone) + 1) // 2
-            new += [stone % 10**c, stone // 10**c]
-        else:
-            new.append(stone * 2024)
-    return new
+def blink(n: int, s: int) -> int:
+    r: int
+    if (n, s) in HIST:
+        return HIST[(n, s)]
+    elif n == 0:
+        return 1
+    elif s == 0:
+        r = blink(n - 1, 1)
+    elif num_digits(s) % 2 == 0:
+        c = num_digits(s) // 2
+        r = blink(n - 1, s % 10**c) + blink(n - 1, s // 10**c)
+    else:
+        r = blink(n - 1, s * 2024)
+    HIST[(n, s)] = r
+    return r
+
+
+def num_digits(n: int) -> int:
+    return math.floor(math.log10(n) + 1)
 
 
 if __name__ == "__main__":
